@@ -69,6 +69,7 @@ class SoundPlaybackService : Service() {
         player.setOnCompletionListener {
             if (mediaPlayer === player) {
                 release()
+                returnToHomeScreen()
                 stopSelf()
             }
         }
@@ -141,6 +142,15 @@ class SoundPlaybackService : Service() {
             }
         }
         player.release()
+    }
+
+    // 回城之后能回到主屏幕很合理吧（
+    private fun returnToHomeScreen() {
+        val homeIntent = Intent(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_HOME)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        runCatching { startActivity(homeIntent) }
     }
 
     companion object {
