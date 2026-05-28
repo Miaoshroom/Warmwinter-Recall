@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">回城</string>
+    <string name="playback_notification_channel">回城音效</string>
+    <string name="playing_notification_text">正在引导</string>
+</resources>
