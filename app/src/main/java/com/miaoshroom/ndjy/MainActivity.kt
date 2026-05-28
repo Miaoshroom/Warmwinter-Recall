@@ -1,5 +1,6 @@
 package com.miaoshroom.ndjy
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -7,24 +8,50 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.graphics.drawable.Icon
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
+    // 允许通知后再开始回城，主要是第一次得允许通知权限x
+    private val requestNotificationPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) {
+        startReturnAndClose()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SoundPlaybackService.restart(this)
-        closeWithoutAnimation()
+        startReturnIfNotificationPermissionReady()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        startReturnIfNotificationPermissionReady()
+    }
+
+    private fun startReturnIfNotificationPermissionReady() {
+        // 听说 Android 13 起需要先请求通知权限，不知道，ai说的
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            return
+        }
+
+        startReturnAndClose()
+    }
+
+    private fun startReturnAndClose() {
         SoundPlaybackService.restart(this)
         closeWithoutAnimation()
     }
@@ -44,6 +71,13 @@ class SoundPlaybackService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // 通知按钮用这个动作打断回城
+        if (intent?.action == ACTION_CANCEL_RETURN) {
+            release()
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
         startAsForegroundService()
         restartSound()
         return START_NOT_STICKY
@@ -111,12 +145,27 @@ class SoundPlaybackService : Service() {
             openAppIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+        // 给通知栏的取消按钮发送打断指令
+        val cancelIntent = Intent(this, SoundPlaybackService::class.java)
+            .setAction(ACTION_CANCEL_RETURN)
+        val cancelPendingIntent = PendingIntent.getService(
+            this,
+            1,
+            cancelIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val cancelAction = Notification.Action.Builder(
+            Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel),
+            getString(R.string.cancel_return_action),
+            cancelPendingIntent,
+        ).build()
 
         return Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.playing_notification_text))
             .setContentIntent(pendingIntent)
+            .addAction(cancelAction)
             .setOngoing(true)
             .build()
     }
@@ -154,6 +203,7 @@ class SoundPlaybackService : Service() {
     }
 
     companion object {
+        private const val ACTION_CANCEL_RETURN = "com.miaoshroom.ndjy.action.CANCEL_RETURN"
         private const val CHANNEL_ID = "sound_playback"
         private const val NOTIFICATION_ID = 1
 

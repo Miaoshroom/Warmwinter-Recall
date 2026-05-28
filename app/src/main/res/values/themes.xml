@@ -3,10 +3,13 @@
 
     <style name="Theme.暖冬家园" parent="android:Theme.Material.Light.NoActionBar" />
 
-    <style name="Theme.暖冬家园.NoDisplay" parent="@android:style/Theme.NoDisplay">
+    <style name="Theme.暖冬家园.Transparent" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowDisablePreview">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowAnimationStyle">@style/Animation.暖冬家园.None</item>
     </style>
 
