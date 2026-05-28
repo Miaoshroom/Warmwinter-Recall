@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.暖冬家园" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.暖冬家园.NoDisplay" parent="@android:style/Theme.NoDisplay">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowAnimationStyle">@style/Animation.暖冬家园.None</item>
+    </style>
+
+    <style name="Animation.暖冬家园.None" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/no_animation</item>
+        <item name="android:activityOpenExitAnimation">@anim/no_animation</item>
+        <item name="android:activityCloseEnterAnimation">@anim/no_animation</item>
+        <item name="android:activityCloseExitAnimation">@anim/no_animation</item>
+        <item name="android:taskOpenEnterAnimation">@anim/no_animation</item>
+        <item name="android:taskOpenExitAnimation">@anim/no_animation</item>
+        <item name="android:taskCloseEnterAnimation">@anim/no_animation</item>
+        <item name="android:taskCloseExitAnimation">@anim/no_animation</item>
+    </style>
+</resources>
